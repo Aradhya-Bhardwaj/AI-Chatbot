@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Virtual Makeup Try-On Assistant</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, rgba(255, 204, 213, 0.6), rgba(255, 214, 231, 0.6), rgba(226, 193, 255, 0.6)), 
+                  url('https://images.pexels.com/photos/3373721/pexels-photo-3373721.jpeg?auto=compress&cs=tinysrgb&w=2070') no-repeat center center fixed;
+      background-size: cover;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: linear-gradient(90deg, #ff8fa3, #ff70a6);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-title {
+      color: #fff;
+      font-size: 22px;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .language-select {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #ff70a6;
+      font-size: 14px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .language-select:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .input-center-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      width: 90%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 15px;
+      border-radius: 25px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(5px);
+    }
+
+    .center-input {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 16px;
+      color: #333;
+      outline: none;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s;
+    }
+
+    .center-input:focus {
+      box-shadow: 0 0 10px rgba(255, 112, 166, 0.5);
+    }
+
+    .bottom-input-container {
+      display: none;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .bottom-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 10px 15px;
+      border-radius: 25px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(5px);
+    }
+
+    .bottom-input {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 16px;
+      color: #333;
+      outline: none;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s;
+    }
+
+    .bottom-input:focus {
+      box-shadow: 0 0 10px rgba(255, 112, 166, 0.5);
+    }
+
+    button {
+      padding: 12px 25px;
+      background: linear-gradient(90deg, #ff70a6, #ff8fa3);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(255, 112, 166, 0.4);
+    }
+
+    .image-upload-icon, .capture-icon {
+      padding: 12px;
+      background: #ffccd5;
+      color: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .image-upload-icon:hover, .capture-icon:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(255, 112, 166, 0.4);
+    }
+
+    .image-upload-icon input, .capture-icon input {
+      display: none;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 90%;
+      max-height: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #videoFeed {
+      max-width: 100%;
+      border-radius: 15px;
+      margin-bottom: 15px;
+      border: 2px solid #ff8fa3;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .modal-buttons button {
+      padding: 10px 25px;
+      font-size: 14px;
+      border-radius: 15px;
+    }
+
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .message {
+      margin: 10px 15px;
+      padding: 12px 18px;
+      border-radius: 20px;
+      max-width: 70%;
+      font-size: 15px;
+      line-height: 1.5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      animation: slideIn 0.3s ease;
+    }
+
+    .bot-message {
+      background: #ffccd5;
+      align-self: flex-start;
+      color: #333;
+      border-bottom-left-radius: 5px;
+    }
+
+    .user-message {
+      background: linear-gradient(90deg, #ff70a6, #ff8fa3);
+      align-self: flex-end;
+      color: #fff;
+      border-bottom-right-radius: 5px;
+    }
+
+    .image-message {
+      max-width: 250px;
+      border-radius: 15px;
+      margin: 10px;
+      border: 2px solid #ff8fa3;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    ul {
+      margin: 10px 0;
+      padding-left: 25px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #ff8fa3;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .chat-container {
+        border-radius: 0;
+      }
+
+      .header-title {
+        font-size: 18px;
+      }
+
+      .language-select {
+        font-size: 12px;
+        padding: 6px 10px;
+      }
+
+      .input-center-container, .bottom-input-wrapper {
+        width: 95%;
+        padding: 10px;
+      }
+
+      .center-input, .bottom-input {
+        font-size: 14px;
+        padding: 10px 15px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 13px;
+      }
+
+      .image-upload-icon, .capture-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+
+      .message {
+        font-size: 14px;
+        max-width: 80%;
+      }
+
+      .image-message {
+        max-width: 200px;
+      }
+
+      .modal-content {
+        padding: 15px;
+      }
+
+      #videoFeed {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <span class="header-title">Virtual Makeup Try-On Assistant</span>
+      <select id="languageSelect" class="language-select" onchange="changeLanguage()">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="hi">हिन्दी</option>
+      </select>
+    </div>
+
+    <!-- Centered search bar at first -->
+    <div id="centerInput" class="input-center-container">
+      <input type="text" class="center-input" id="userInput" placeholder="Ask about makeup or skincare...">
+      <button id="sendButtonCenter">Send</button>
+    </div>
+
+    <!-- Chat message area -->
+    <div class="chat-body" id="chatBody"></div>
+
+    <!-- Bottom input after chat starts -->
+    <div id="bottomInput" class="bottom-input-container">
+      <div class="bottom-input-wrapper">
+        <input type="text" class="bottom-input" id="userInputBottom" placeholder="Ask more questions...">
+        <label class="image-upload-icon">
+          <input type="file" id="imageUpload" accept="image/*">
+          <i class="fas fa-camera"></i>
+        </label>
+        <button class="capture-icon" onclick="openCameraModal()">
+          <i class="fas fa-video"></i>
+        </button>
+        <button id="sendButtonBottom" onclick="sendMessageFromBottom()">Send</button>
+      </div>
+    </div>
+
+    <!-- Modal for camera capture -->
+    <div id="cameraModal" class="modal">
+      <div class="modal-content">
+        <video id="videoFeed" autoplay playsinline></video>
+        <div class="modal-buttons">
+          <button id="captureButton" onclick="captureImage()">Capture</button>
+          <button id="cancelButton" onclick="closeCameraModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "AIzaSyCUKmJ02YFyUwD4RZmMJtY7bpCCX3Ou8uo";
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+
+    let loadingMessageEl = null;
+    let chatStarted = false;
+    let videoStream = null;
+    let currentLanguage = 'en';
+
+    // Translation object for UI elements and greetings
+    const translations = {
+      en: {
+        greeting: `
+          <p>Hi! I'm Jennie, your Virtual Makeup Try-On Assistant!</p>
+          <p>How may I help you today? Ask about makeup, skincare, or haircuts, or upload/capture an image for personalized suggestions!</p>
+        `,
+        centerPlaceholder: 'Ask about makeup, skincare, or haircuts...',
+        bottomPlaceholder: 'Ask more questions...',
+        sendButton: 'Send',
+        captureButton: 'Capture',
+        cancelButton: 'Cancel',
+        cameraError: 'Sorry, I couldn’t access your camera. Please allow camera access or upload an image instead.',
+        imageError: 'Sorry, I couldn’t analyze the image. Try again or ask about makeup, outfits, or haircuts directly!',
+        imageFallback: `
+          I couldn't analyze the skin tone, face shape, or hair type from the image. Here are some general suggestions:
+          - **Makeup**: Try a versatile nude lipstick, soft pink blush, and neutral eyeshadow for a natural look.
+          - **Outfit**: Opt for classic colors like navy blue or white, which suit most skin tones.
+          - **Haircut**: Consider a shoulder-length bob, which is flattering for most face shapes, or layered cuts for added volume with various hair types.
+          Upload another image or describe your skin tone, face shape, or hair type for more personalized tips!
+        `,
+        typing: 'Jennie is typing...',
+        analyzing: 'Jennie is analyzing your image...'
+      },
+      es: {
+        greeting: `
+          <p>¡Hola! Soy Jennie, tu Asistente Virtual de Prueba de Maquillaje!</p>
+          <p>¿Cómo puedo ayudarte hoy? Pregunta sobre maquillaje, cuidado de la piel o cortes de cabello, o sube/captura una imagen para sugerencias personalizadas!</p>
+        `,
+        centerPlaceholder: 'Pregunta sobre maquillaje, cuidado de la piel o cortes de cabello...',
+        bottomPlaceholder: 'Haz más preguntas...',
+        sendButton: 'Enviar',
+        captureButton: 'Capturar',
+        cancelButton: 'Cancelar',
+        cameraError: 'Lo siento, no pude acceder a tu cámara. Por favor, permite el acceso a la cámara o sube una imagen en su lugar.',
+        imageError: 'Lo siento, no pude analizar la imagen. ¡Intenta de nuevo o pregunta sobre maquillaje, atuendos o cortes de cabello directamente!',
+        imageFallback: `
+          No pude analizar el tono de piel, la forma del rostro o el tipo de cabello de la imagen. Aquí hay algunas sugerencias generales:
+          - **Maquillaje**: Prueba un labial nude versátil, rubor rosa suave y sombra de ojos neutra para un look natural.
+          - **Atuendo**: Opta por colores clásicos como azul marino o blanco, que se adaptan a la mayoría de los tonos de piel.
+          - **Corte de cabello**: Considera un bob hasta los hombros, que favorece a la mayoría de las formas de rostro, o cortes en capas para mayor volumen con varios tipos de cabello.
+          ¡Sube otra imagen o describe tu tono de piel, forma de rostro o tipo de cabello para consejos más personalizados!
+        `,
+        typing: 'Jennie está escribiendo...',
+        analyzing: 'Jennie está analizando tu imagen...'
+      },
+      fr: {
+        greeting: `
+          <p>Bonjour ! Je suis Jennie, votre Assistante Virtuelle d'Essayage de Maquillage !</p>
+          <p>Comment puis-je vous aider aujourd'hui ? Posez des questions sur le maquillage, les soins de la peau ou les coupes de cheveux, ou téléchargez/capturez une image pour des suggestions personnalisées !</p>
+        `,
+        centerPlaceholder: 'Posez des questions sur le maquillage, les soins de la peau ou les coupes de cheveux...',
+        bottomPlaceholder: 'Posez plus de questions...',
+        sendButton: 'Envoyer',
+        captureButton: 'Capturer',
+        cancelButton: 'Annuler',
+        cameraError: 'Désolé, je n’ai pas pu accéder à votre caméra. Veuillez autoriser l’accès à la caméra ou téléchargez une image à la place.',
+        imageError: 'Désolé, je n’ai pas pu analyser l’image. Réessayez ou posez des questions sur le maquillage, les tenues ou les coupes de cheveux directement !',
+        imageFallback: `
+          Je n’ai pas pu analyser le teint de la peau, la forme du visage ou le type de cheveux sur l’image. Voici quelques suggestions générales :
+          - **Maquillage** : Essayez un rouge à lèvres nude polyvalent, un blush rose doux et une ombre à paupières neutre pour un look naturel.
+          - **Tenue** : Optez pour des couleurs classiques comme le bleu marine ou le blanc, qui conviennent à la plupart des teints.
+          - **Coupe de cheveux** : Envisagez un carré aux épaules, qui flatte la plupart des formes de visage, ou des coupes en dégradé pour plus de volume avec différents types de cheveux.
+          Téléchargez une autre image ou décrivez votre teint, la forme de votre visage ou votre type de cheveux pour des conseils plus personnalisés !
+        `,
+        typing: 'Jennie est en train de taper...',
+        analyzing: 'Jennie analyse votre image...'
+      },
+      de: {
+        greeting: `
+          <p>Hallo! Ich bin Jennie, deine virtuelle Schminkassistentin!</p>
+          <p>Wie kann ich dir heute helfen? Frage nach Make-up, Hautpflege oder Frisuren, oder lade/erfasse ein Bild für personalisierte Vorschläge!</p>
+        `,
+        centerPlaceholder: 'Frage nach Make-up, Hautpflege oder Frisuren...',
+        bottomPlaceholder: 'Stelle weitere Fragen...',
+        sendButton: 'Senden',
+        captureButton: 'Aufnehmen',
+        cancelButton: 'Abbrechen',
+        cameraError: 'Entschuldigung, ich konnte nicht auf deine Kamera zugreifen. Bitte erlaube den Kamerazugriff oder lade stattdessen ein Bild hoch.',
+        imageError: 'Entschuldigung, ich konnte das Bild nicht analysieren. Versuche es erneut oder frage direkt nach Make-up, Outfits oder Frisuren!',
+        imageFallback: `
+          Ich konnte den Hautton, die Gesichtsform oder den Haartyp auf dem Bild nicht analysieren. Hier sind einige allgemeine Vorschläge:
+          - **Make-up**: Probiere einen vielseitigen Nude-Lippenstift, zarten rosa Rouge und neutralen Lidschatten für einen natürlichen Look.
+          - **Outfit**: Entscheide dich für klassische Farben wie Marineblau oder Weiß, die zu den meisten Hauttönen passen.
+          - **Frisur**: Erwäge einen schulterlangen Bob, der den meisten Gesichtsformen schmeichelt, oder gestufte Schnitte für mehr Volumen bei verschiedenen Haartypen.
+          Lade ein weiteres Bild hoch oder beschreibe deinen Hautton, deine Gesichtsform oder deinen Haartyp für individuellere Tipps!
+        `,
+        typing: 'Jennie tippt...',
+        analyzing: 'Jennie analysiert dein Bild...'
+      },
+      hi: {
+        greeting: `
+          <p>नमस्ते! मैं जेनी हूँ, आपकी वर्चुअल मेकअप ट्राई-ऑन असिस्टेंट!</p>
+          <p>मैं आज आपकी कैसे मदद कर सकती हूँ? मेकअप, स्किनकेयर या हेयरकट के बारे में पूछें, या व्यक्तिगत सुझावों के लिए एक तस्वीर अपलोड/कैप्चर करें!</p>
+        `,
+        centerPlaceholder: 'मेकअप, स्किनकेयर या हेयरकट के बारे में पूछें...',
+        bottomPlaceholder: 'और सवाल पूछें...',
+        sendButton: 'भेजें',
+        captureButton: 'कैप्चर करें',
+        cancelButton: 'रद्द करें',
+        cameraError: 'क्षमा करें, मैं आपके कैमरे तक नहीं पहुँच सकी। कृपया कैमरे तक पहुँच की अनुमति दें या इसके बजाय एक तस्वीर अपलोड करें।',
+        imageError: 'क्षमा करें, मैं तस्वीर का विश्लेषण नहीं कर सकी। फिर से कोशिश करें या मेकअप, पोशाक या हेयरकट के बारे में सीधे पूछें!',
+        imageFallback: `
+          मैं तस्वीर से त्वचा के रंग, चेहरे की आकृति या बालों के प्रकार का विश्लेषण नहीं कर सकी। यहाँ कुछ सामान्य सुझाव हैं:
+          - **मेकअप**: एक बहुमुखी नग्न लिपस्टिक, हल्का गुलाबी ब्लश, और न्यूट्रल आईशैडो आज़माएँ।
+          - **पोशाक**: क्लासिक रंगों जैसे नेवी ब्लू या सफेद का चयन करें, जो अधिकांश त्वचा टोन के साथ जाते हैं।
+          - **हेयरकट**: कंधे तक की लंबाई का बॉब आज़माएँ, जो अधिकांश चेहरे की आकृतियों को सूट करता है, या विभिन्न बालों के प्रकार के लिए वॉल्यूम बढ़ाने वाले लेयर्ड कट।
+          एक और तस्वीर अपलोड करें या अपने त्वचा टोन, चेहरे की आकृति या बालों के प्रकार का वर्णन करें अधिक व्यक्तिगत सुझावों के लिए!
+        `,
+        typing: 'जेनी टाइप कर रही है...',
+        analyzing: 'जेनी आपकी तस्वीर का विश्लेषण कर रही है...'
+      }
+    };
+
+    // Display greeting message on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateUI();
+      addMessage(translations[currentLanguage].greeting, 'bot-message');
+    });
+
+    // Handle language change
+    function changeLanguage() {
+      currentLanguage = document.getElementById('languageSelect').value;
+      updateUI();
+    }
+
+    // Update UI elements based on selected language
+    function updateUI() {
+      const t = translations[currentLanguage];
+      document.getElementById('userInput').placeholder = t.centerPlaceholder;
+      document.getElementById('userInputBottom').placeholder = t.bottomPlaceholder;
+      document.getElementById('sendButtonCenter').textContent = t.sendButton;
+      document.getElementById('sendButtonBottom').textContent = t.sendButton;
+      document.getElementById('captureButton').textContent = t.captureButton;
+      document.getElementById('cancelButton').textContent = t.cancelButton;
+    }
+
+    // Handle image upload
+    document.getElementById('imageUpload').addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Display the image in the chat
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = `<img src="${e.target.result}" class="image-message" alt="Uploaded image">`;
+        addMessage(img, 'user-message');
+      };
+      reader.readAsDataURL(file);
+
+      // Show loading message
+      loadingMessageEl = addMessage(translations[currentLanguage].analyzing, 'bot-message');
+
+      // Send image to Gemini API
+      try {
+        const base64Image = await fileToBase64(file);
+        const response = await fetchGeminiImageResponse(base64Image, file.type);
+        if (loadingMessageEl) loadingMessageEl.remove();
+        addMessage(response, 'bot-message');
+      } catch (err) {
+        if (loadingMessageEl) loadingMessageEl.remove();
+        addMessage(translations[currentLanguage].imageError, 'bot-message');
+      }
+    });
+
+    // Open camera modal
+    async function openCameraModal() {
+      console.log('Attempting to open camera modal...');
+      const modal = document.getElementById('cameraModal');
+      const video = document.getElementById('videoFeed');
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('getUserMedia not supported in this browser');
+        addMessage(translations[currentLanguage].cameraError, 'bot-message');
+        return;
+      }
+
+      try {
+        console.log('Requesting camera access...');
+        videoStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user' }
+        });
+        console.log('Camera access granted, setting video source...');
+        video.srcObject = videoStream;
+        modal.style.display = 'flex';
+        console.log('Modal displayed');
+      } catch (err) {
+        console.error('Camera access error:', err.name, err.message);
+        addMessage(translations[currentLanguage].cameraError, 'bot-message');
+      }
+    }
+
+    // Close camera modal
+    function closeCameraModal() {
+      console.log('Closing camera modal...');
+      const modal = document.getElementById('cameraModal');
+      const video = document.getElementById('videoFeed');
+      if (videoStream) {
+        console.log('Stopping video stream...');
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+      }
+      video.srcObject = null;
+      modal.style.display = 'none';
+      console.log('Modal closed');
+    }
+
+    // Capture image from video
+    async function captureImage() {
+      console.log('Capturing image...');
+      const video = document.getElementById('videoFeed');
+      if (!video.videoWidth || !video.videoHeight) {
+        console.error('Video feed not ready');
+        addMessage(translations[currentLanguage].imageError, 'bot-message');
+        closeCameraModal();
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+
+      // Display captured image in chat
+      const imageDataUrl = canvas.toDataURL('image/jpeg');
+      console.log('Image captured, displaying in chat...');
+      const img = `<img src="${imageDataUrl}" class="image-message" alt="Captured image">`;
+      addMessage(img, 'user-message');
+
+      // Show loading message
+      loadingMessageEl = addMessage(translations[currentLanguage].analyzing, 'bot-message');
+
+      // Send captured image to Gemini API
+      try {
+        console.log('Sending captured image to API...');
+        const base64Image = imageDataUrl.split(',')[1];
+        const response = await fetchGeminiImageResponse(base64Image, 'image/jpeg');
+        if (loadingMessageEl) loadingMessageEl.remove();
+        addMessage(response, 'bot-message');
+        console.log('API response received and displayed');
+      } catch (err) {
+        console.error('Image analysis error:', err);
+        if (loadingMessageEl) loadingMessageEl.remove();
+        addMessage(translations[currentLanguage].imageError, 'bot-message');
+      }
+
+      // Close modal
+      closeCameraModal();
+    }
+
+    // Convert file to base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user-message");
+      input.value = "";
+      showBottomInput();
+
+      loadingMessageEl = addMessage(translations[currentLanguage].typing, 'bot-message');
+
+      const response = await fetchGeminiResponse(message);
+
+      if (loadingMessageEl) loadingMessageEl.remove();
+      addMessage(response, "bot-message");
+    }
+
+    async function sendMessageFromBottom() {
+      const input = document.getElementById("userInputBottom");
+      const message = input.value.trim();
+      if (!message) return;
+
+      addMessage(message, "user-message");
+      input.value = "";
+
+      loadingMessageEl = addMessage(translations[currentLanguage].typing, 'bot-message');
+
+      const response = await fetchGeminiResponse(message);
+
+      if (loadingMessageEl) loadingMessageEl.remove();
+      addMessage(response, "bot-message");
+    }
+
+    function showBottomInput() {
+      if (!chatStarted) {
+        document.getElementById("centerInput").style.display = "none";
+        document.getElementById("bottomInput").style.display = "block";
+        chatStarted = true;
+      }
+    }
+
+    async function fetchGeminiResponse(text) {
+      const langMap = {
+        en: 'English',
+        es: 'Spanish',
+        fr: 'French',
+        de: 'German',
+        hi: 'Hindi'
+      };
+      const prompt = `I am Jennie, a Virtual Makeup Try-On Assistant here to assist with makeup, skincare, and haircuts. Please answer this clearly and professionally in ${langMap[currentLanguage]}:\n\n"${text}"`;
+
+      try {
+        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        const data = await res.json();
+        const rawText = data.candidates[0].content.parts[0].text;
+        return formatBotResponse(rawText);
+      } catch (err) {
+        console.error(err);
+        return translations[currentLanguage].imageError;
+      }
+    }
+
+    async function fetchGeminiImageResponse(base64Image, mimeType) {
+      const langMap = {
+        en: 'English',
+        es: 'Spanish',
+        fr: 'French',
+        de: 'German',
+        hi: 'Hindi'
+      };
+      const prompt = `I am Jennie, a Virtual Makeup Try-On Assistant. Analyze this image to detect the user's skin tone, face shape (e.g., oval, round, square), and hair type (e.g., straight, wavy, curly). Based on the analysis, provide personalized suggestions in ${langMap[currentLanguage]} for:
+      - **Makeup**: Suggest specific products (e.g., lipstick shades, eyeshadow colors) that complement the detected skin tone.
+      - **Outfit**: Recommend outfit styles (e.g., colors, clothing types) that suit the skin tone.
+      - **Haircut**: Suggest haircut styles (e.g., bob, pixie, layered) that flatter the detected face shape and work well with the hair type.
+      If detection of any feature (skin tone, face shape, or hair type) is not possible, provide general suggestions in ${langMap[currentLanguage]} and explain why.`;
+
+      try {
+        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: mimeType,
+                    data: base64Image
+                  }
+                }
+              ]
+            }]
+          })
+        });
+
+        const data = await res.json();
+        const rawText = data.candidates[0].content.parts[0].text;
+
+        // Fallback if Gemini cannot analyze features
+        if (rawText.includes('cannot analyze') || rawText.includes('unable to detect')) {
+          return formatBotResponse(translations[currentLanguage].imageFallback);
+        }
+
+        return formatBotResponse(rawText);
+      } catch (err) {
+        console.error(err);
+        return formatBotResponse(translations[currentLanguage].imageFallback);
+      }
+    }
+
+    function formatBotResponse(text) {
+      const lines = text.split("\n").filter(line => line.trim() !== "");
+      let formatted = "";
+      let list = [];
+
+      lines.forEach(line => {
+        const cleanLine = line.replace(/\*\*(.*?)\*\*/g, "$1").replace(/<[^>]*>/g, "");
+
+        if (/^[-•*]\s+/.test(cleanLine)) {
+          list.push(cleanLine.replace(/^[-•*]\s+/, ""));
+        } else {
+          if (list.length) {
+            formatted += "<ul>" + list.map(item => `<li>${item}</li>`).join("") + "</ul>";
+            list = [];
+          }
+          formatted += `<p>${cleanLine}</p>`;
+        }
+      });
+
+      if (list.length) {
+        formatted += "<ul>" + list.map(item => `<li>${item}</li>`).join("") + "</ul>";
+      }
+
+      return formatted;
+    }
+
+    function addMessage(content, type) {
+      const chatBody = document.getElementById("chatBody");
+      const messageEl = document.createElement("div");
+      messageEl.className = `message ${type}`;
+      messageEl.innerHTML = content;
+      chatBody.appendChild(messageEl);
+      chatBody.scrollTop = chatBody.scrollHeight;
+      return messageEl;
+    }
+
+    document.addEventListener("keypress", function (e) {
+      if (e.key === "Enter" && !chatStarted) sendMessage();
+      else if (e.key === "Enter" && chatStarted) sendMessageFromBottom();
+    });
+  </script>
+</body>
+</html>
